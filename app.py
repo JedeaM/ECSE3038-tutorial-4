@@ -17,16 +17,23 @@ readings = [
     {"name": "patio",      "room": "outside", "temp": 29.8, "online": True},
 ]
 
+
 @app.get("/devices")
 def get_devices():
     return readings
+
 
 @app.get("/devices/{name}")
 def get_device(name: str):
     for device in readings:
         if device["name"] == name:
             return device
-    raise HTTPException(status_code=404, detail="No device called " + name)
+
+    raise HTTPException(
+        status_code=404,
+        detail="No device called " + name
+    )
+
 
 @app.post("/devices", status_code=201)
 def create_device(device: Device):
@@ -34,12 +41,26 @@ def create_device(device: Device):
     readings.append(new_device)
     return new_device
 
+
 @app.put("/devices/{name}")
 def update_device(name: str, device: Device):
     for index, existing_device in enumerate(readings):
         if existing_device["name"] == name:
             readings[index] = device.model_dump()
             return readings[index]
+
+    raise HTTPException(
+        status_code=404,
+        detail="No device called " + name
+    )
+
+
+@app.delete("/devices/{name}")
+def delete_device(name: str):
+    for device in readings:
+        if device["name"] == name:
+            readings.remove(device)
+            return {"deleted": name}
 
     raise HTTPException(
         status_code=404,
